@@ -8,25 +8,21 @@ RDscan software is freely available for academic purposes and a license is requi
 
 ---------------------------------------------------------------------
 ## Installation<br>
-![tested](https://img.shields.io/badge/Tested-centos:6-blue)
-![tested](https://img.shields.io/badge/Tested-ubuntu:16-blue)
+![tested](https://img.shields.io/badge/Tested-centos-blue)
+![tested](https://img.shields.io/badge/Tested-ubuntu-blue)
 
-Since the precompiled libraries in lib/ folder are made in CentOS environment, we recommend you to make file in CentOS.<br>
-Or, you can simply use the compiled exe file located in bin/rdscan_v1.0.0<br>
+There are two ways to install RDscan.
 
-### Prerequisites
+### 1. Build
 ```console
-$ yum install gcc gcc-c++ make 
-$ yum install zlib-devel
+$ git clone https://github.com/satchellhong/RDscan.git
+$ cd rdscan
+$ ./build.sh
 ```
 
-### Make
+### 2. Docker
 ```console
-$ git clone https://github.com/SyntekabioTools/RDscan.git
-
-$ cd ./v1.0.0/src/
-
-$ make
+$ docker pull paramost/rdscan
 ```
 
 ## User Guide<br>
