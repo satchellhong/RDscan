@@ -66,5 +66,3 @@ make
 cd ${rootdir}/rdscan/src
 make clean
 make
-
-${rootdir}/rdscan/bin/rd_scan
