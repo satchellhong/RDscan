@@ -6,7 +6,7 @@ CFLAGS          = -O2 -g -Wall -std=c++0x
 
 SRCS		= main.cc	preprocess.cc	calcDist.cc	report.cc	
 OBJECTS     = main.o	preprocess.o	calcDist.o	report.o
-TARGET 		= rd_scan_v1.0.0 
+TARGET 		= rd_scan
 
 
 

@@ -18,8 +18,8 @@
 #include "./alglib.h"
 #include "./bam/bam.h"
 #include "./bio_files.h"
-#include "./util.h"
-#include "./suffix_array.h"
+#include "./util/util.h"
+#include "./util/suffix_array.h"
 
 
 #define EXTRA_LEN	500

@@ -1,3 +1,4 @@
+#!/bin/bash
 os=`cat /etc/os-release 2> /dev/null | awk '
 NR==1{if($0~/.*[Cc][Ee][Nn][Tt][Oo][Ss].*/){print '1';}
 else if($0~/.*[Uu][Bb][Uu][Nn][Tt][Uu].*/){print '2'}}
@@ -11,6 +12,7 @@ fi
 
 chsudo=""
 if [[ $os == 1 ]]; then
+	echo "CentOS"
 	if [ $EUID -ne 0 ]; then
 		chsudo="sudo "
 	fi
@@ -28,6 +30,7 @@ if [[ $os == 1 ]]; then
 	fi
 	
 elif [[ $os == 2 ]]; then
+	echo "Ubuntu"
 	if [ $EUID -ne 0 ]; then
 		chsudo="sudo "
 	fi
@@ -49,13 +52,19 @@ else
 fi
 
 rootdir=`pwd`
+mkdir -p ${rootdir}/rdscan/lib
+
+# make libs
 cd ${rootdir}/rdscan/header/alglib
 make clean
 make
+cd ${rootdir}/rdscan/header/
+make clean
+make	
 
-${chsudo}cp ${rootdir}/rdscan/lib/libbiofiles${os}.a ${rootdir}/rdscan/lib/libbiofiles.a
-${chsudo}cp ${rootdir}/rdscan/lib/libutil${os}.a ${rootdir}/rdscan/lib/libutil.a	
-
+# make run file
 cd ${rootdir}/rdscan/src
 make clean
 make
+
+${rootdir}/rdscan/bin/rd_scan

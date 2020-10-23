@@ -97,3 +97,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+#objs
+*.o
+*.a
