@@ -37,21 +37,19 @@
 using namespace std;
 
 int parse_opt(const int argc, char **argv, int &nStatus, string &sBamFile, string &sBamFileN, string &sRefFile, 
-	string &sInputFile, int &nCntThread, bool &bIsDebug);
+	string &sInputFile, string &sOutputFile, int &nCntThread, bool &bIsDebug);
 bool manual()
 {
-	cout << "====================================== Adiscan manual ====================================" << endl;
+	cout << "====================================== RDscan manual ====================================" << endl;
 	cout << "1. COMMANDs"											<< endl;
 	cout << "  (1) Single Sample" 									<< endl;
-    cout << "      ./rd_scan –b [Bam file] -r [reference file] -i [input]" 	<< endl;
+    cout << "      ./rd_scan -b ${Bam} -r ${Ref Fasta} -i ${Vcf} -o ${Output Vcf}" 	<< endl;
 	cout << "  (2) Paired Samples" 									<< endl;
-	cout << "      ./rd_scan –b [Case bam file] -n [Control bam file] -r [reference file] -i [input]" 	<< endl;
+	cout << "      ./rd_scan -b ${Tumor Bam} -n ${Normal Bam} -r ${Ref Fasta} -i ${Vcf} -o ${Output Vcf}" 	<< endl;
 
 	cout << endl;
-	cout << "1.1. OPTIONs" << endl;
-	cout << "  (1) Input format			-f	[string], default='VCF' " << endl;
-	cout << "		['VCF'/'ADIscan'/'VARscan']" 	<< endl;
-	cout << "  (2) # of Thread			-t	[unsigned int], default=1"				<< endl;
+	cout << "2. OPTIONs" << endl;
+	cout << "  (1) # of Thread			-t	[unsigned int], default=1"				<< endl;
 	cout << "============================================================================================" << endl << endl;
 
 	return true;
@@ -60,28 +58,36 @@ bool manual()
 
 int main(int argc, char* argv[])
 {
-	int nStatus = 1;			// 1:vcf, 2:adiscan, 3:varscan 
+	int nStatus = 1;			// 1:vcf 
 	string sBamFile = "";			//bam file
 	string sBamFileN = "";
 	string sRefFile;
 	string sInputFile;
+	string sOutputFile;
 	int nCntThread = 1;
 	bool bIsDebug = false;
 
+
 	try
 	{
-		parse_opt(argc, argv, nStatus, sBamFile, sBamFileN, sRefFile, sInputFile, nCntThread, bIsDebug); 
+		parse_opt(argc, argv, nStatus, sBamFile, sBamFileN, sRefFile, sInputFile, sOutputFile, nCntThread, bIsDebug); 
 		if(nStatus == 0)			manual();
 		else
 		{
 			if(nStatus == 3 && sBamFileN == "")		throw std::logic_error("VARscan is available with paired samples");
 
 			//construct class & init
-			CRD RD(nStatus, sBamFile, sBamFileN, sRefFile, sInputFile, nCntThread, bIsDebug);
+			CRD RD(nStatus, sBamFile, sBamFileN, sRefFile, sInputFile, sOutputFile, nCntThread, bIsDebug);
+
+			RD.PrintCommonInfo();
+			cout << endl;
+
 			//read files (ref, input)
 			RD.ReadInput();
+			
 			//calculate read distribution
 			RD.CalcDist();		
+			
 			//report
 			RD.Report();
 		}
@@ -108,20 +114,22 @@ int main(int argc, char* argv[])
 
 
 int parse_opt(const int argc, char **argv, int &nStatus, string &sBamFile, string &sBamFileN, string &sRefFile, 
-	string &sInputFile, int &nCntThread, bool &bIsDebug)
+	string &sInputFile, string &sOutputFile, int &nCntThread, bool &bIsDebug)
 {
 	bool bBOption = false;
 	bool bNOption = false;
 	bool bROption = false;
 	bool bIOption = false;
 	bool bQOption = false;
+	bool bOOption = false;
 
 	struct option long_options[] =
 	{
 		{"bamFile", 		1, 0, 'b'},		//0
 		{"bamFileN",		1, 0, 'n'},
 		{"refFile",			1, 0, 'r'},		//1
-		{"input",			0, 0, 'i'},		//3
+		{"input",			1, 0, 'i'},		//3
+		{"output",			1, 0, 'o'},
 		{"input format",	1, 0, 'f'},		//4	
 		{"num_thread", 		1, 0, 't'},		//8
 		{0, 0, 0, 0}
@@ -132,7 +140,7 @@ int parse_opt(const int argc, char **argv, int &nStatus, string &sBamFile, strin
 	while (1) 
 	{   
 		int option_index = 0;
-		c = getopt_long(argc, argv, "b:n:r:i:f:t:q", long_options, &option_index);
+		c = getopt_long(argc, argv, "b:n:r:i:o:f:t:q", long_options, &option_index);
 		if (c == -1)    break;
 		char *pcEnd;
 		switch (c) 
@@ -153,11 +161,17 @@ int parse_opt(const int argc, char **argv, int &nStatus, string &sBamFile, strin
 				bIOption = true;
 				sInputFile = optarg;
 				break;
+			case 'o':
+				bOOption = true;
+				sOutputFile = optarg;
+				break;
 			case 'f':
+				/*
 				if((string)optarg == "VCF")			nStatus = 1;
 				else if((string)optarg == "ADIscan")	nStatus = 2;
 				else if((string)optarg == "VARscan")	nStatus = 3;
 				else							nStatus = 0;
+				*/
 				break;
 			case 't':
 				nCntThread = strtol(optarg, &pcEnd, 10);
@@ -168,7 +182,7 @@ int parse_opt(const int argc, char **argv, int &nStatus, string &sBamFile, strin
 		}
 	}
 
-	if(!bBOption || !bROption || !bIOption)		nStatus = 0;
+	if(!bBOption || !bROption || !bIOption || !bOOption)		nStatus = 0;
 	return true;
 }
 

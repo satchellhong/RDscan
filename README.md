@@ -1,5 +1,5 @@
 # RDscan
-![bin](https://img.shields.io/badge/version-v1.0.0-green)
+![bin](https://img.shields.io/badge/version-v1.0.1-green)
 
 ---------------------------------------------------------------------
 
@@ -20,7 +20,10 @@ $ cd rdscan
 $ ./build.sh
 ```
 
-### 2. Docker
+### 2. Docker Image
+You can get the image from [here](https://hub.docker.com/repository/docker/paramost/rdscan)
+
+rdscan
 ```console
 $ docker pull paramost/rdscan
 ```

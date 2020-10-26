@@ -47,8 +47,7 @@ elif [[ $os == 2 ]]; then
 		${chsudo}apt-get install -y zlib1g-dev
 	fi
 else
-	echo "Cannot configure operating system!"
-	exit 1
+	echo "[WARNING] Cannot configure operating system!"
 fi
 
 rootdir=`pwd`

@@ -12,43 +12,27 @@ bool CRD::CalcDist()
 {
 	//parallel process
 	vector<DIST_THREAD> vDistThread;
-	int nCntAll = m_rdscan.vdCorr.size();
-	int nCntSub	= 0;
-	if(m_nCntThread > 1)	nCntSub = nCntAll/(m_nCntThread-1);
-	else					
-	{
-		nCntSub = nCntAll;
-		m_nCntThread = 1;
-	}
-
 	for(int i=0; i<m_nCntThread; i++)
 	{   
-		int nSIdx = nCntSub*i;
-		int nEIdx = nCntSub*(i+1) - 1;
-		if(i == m_nCntThread-2)			nEIdx = nCntSub*i + nCntSub*4/5 -1;
-		if(i == m_nCntThread-1 && m_nCntThread != 1)         nSIdx = nCntSub*(i-1) + nCntSub*4/5;
-		if(i == m_nCntThread-1)         nEIdx = nCntAll-1;
-
 		DIST_THREAD DistThread;
 		DistThread.RD = this;
-		DistThread.nSIdx = nSIdx;
-		DistThread.nEIdx = nEIdx;
-
+		DistThread.nId = i;
 		vDistThread.push_back(DistThread);
 	}
+
+	this->SetStartTime();
+
 	//create thread
 	pthread_t* thread_handles;
 	thread_handles = new pthread_t[m_nCntThread];
 	for(int i=0; i<m_nCntThread; i++)	pthread_create(&thread_handles[i], NULL, AlleleDist_helper, (void*)&vDistThread[i]);
 	for(int i=0; i<m_nCntThread; i++)	pthread_join(thread_handles[i], NULL);
 	free(thread_handles);
-
-	if(m_bIsDebug)		cout << "DONE: CalcDist()" << endl;
-
+	cout << endl;
 	return true;
 }
 
-void* CRD::AlleleDist(int nSIdx, int nEIdx)
+void* CRD::AlleleDist(int nId)
 {
 
 	//open bam
@@ -78,9 +62,16 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 
 
 	//calc dist
-	for(int i=nSIdx; i<=nEIdx; i++)
+	int nCnt = 0;
+	int nSubCnt = (int)m_rdscan.vdCorr.size()/m_nCntThread;
+	int nExtra = (int)m_rdscan.vdCorr.size()%m_nCntThread;
+	if(nId < nExtra)	nSubCnt++;
+	
+	for(int i=nId; i<(int)m_rdscan.vdCorr.size(); i+=m_nCntThread)
 	{
-		if(m_bIsDebug && i%1000==0)	cout << nSIdx << "-" << nEIdx << "\t" << (double)(i-nSIdx)/(double)(nEIdx-nSIdx)*100 << "%" << endl;
+		nCnt++;
+
+
 		///////////////// get variants info. //////////////////////////
 		int nChr, nPos;
 		string sChr, sRef, sAlt, sAlt1="", sAlt2="";
@@ -101,21 +92,11 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 				if(sRef.size() > 1 && sAlt1.size() > sAlt2.size())		sAlt = sAlt2;
 			}
 		}
-		else if(m_nStatus == 2)			// adiscan
-		{}
-		else if(m_nStatus == 3)			// varscan
-		{
-			if(m_varscan.vsStatus[i] != "Somatic")		
-			{
-				m_rdscan.vdCorr[i] = -1;
-				continue;
-			}
-			sChr = m_varscan.vsChr[i];
-			nPos = m_varscan.vnPos[i];
-			sRef = m_varscan.vsRef[i];
-			sAlt = m_varscan.vsAlt[i];
-		}
-
+		string sPrint = "Calculate RDscore by Thread_" + this->to_string(nId+1) + " - " + sChr + ":" + this->to_string(nPos);
+		if(nCnt==1 || nCnt%1000==0 )	this->ViewStatus(nCnt, nSubCnt, sPrint);
+		if(nCnt==nSubCnt)				this->ViewStatus(nCnt, nSubCnt, sPrint, true);
+	
+		
 		nChr = ConvertChrToTid(sChr, bamHeader);
 		if(nChr == -1)
 		{
@@ -126,8 +107,12 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 		// Check Repeat
 		int nRepeatCnt = 1;
 		int nRepeatLastLen = 0;
-		CheckRepeat(sRef, sAlt, sChr, nPos, nRepeatCnt, nRepeatLastLen);
-	
+		if(m_FaFile.GetRefIdx(sChr) == -1 || !CheckRepeat(sRef, sAlt, sChr, nPos, nRepeatCnt, nRepeatLastLen))
+		{
+			m_rdscan.vdCorr[i] = -1;
+			continue;
+		}
+
 
 		///////////////// calc allele distribution ////////////////////
 		
@@ -142,11 +127,6 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 		AlleleCount(bamIndex, finBam, nChr, nPos, sRef, sAlt, nRepeatCnt, nRepeatLastLen, nPivotSPos, vnNorSPos, vnNorEPos, vnVarSPos, vnVarEPos, vsNorSeq, vsVarSeq);
 		if(m_sBamFileN != "")	AlleleCount(bamIndexN, finBamN, nChr, nPos, sRef, sAlt, nRepeatCnt, nRepeatLastLen, nPivotSPosN, vnNorSPosN, vnNorEPosN, vnVarSPosN, vnVarEPosN, vsNorSeqN, vsVarSeqN);
 	
-		if(m_bIsDebug)	cout << sChr << ":" << nPos << "\t" << vnVarSPos.size() << "/" << vnNorSPos.size()+vnVarSPos.size();
-		if(m_bIsDebug && m_sBamFileN != "")	cout << "\t" << vnVarSPosN.size() << "/" << vnNorSPosN.size()+vnVarSPosN.size();
-		if(m_bIsDebug)	cout << endl;
-
-
 
 		///////////////// filter read ////////////////////////////////
 		int nSumNor,nSumVar,nSumNorN,nSumVarN;
@@ -164,7 +144,7 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 		if(m_sBamFileN != "")	dAveNorReadLenN = (double)nSumNorN/(double)nCntNorN;
 		
 		
-		if(m_bIsDebug)	cout << sChr << ":" << nPos << "\t" << vnVarSPos.size() << "/" << vnNorSPos.size()+vnVarSPos.size() <<endl;
+//		if(m_bIsDebug)	cout << sChr << ":" << nPos << "\t" << vnVarSPos.size() << "/" << vnNorSPos.size()+vnVarSPos.size() <<endl;
 		
 
 
@@ -197,7 +177,7 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 			}
 		}
 
-			
+	
 
 		///////////////// calc correlation between all & variants ////////////////////
 		double dCorr, dPval;
@@ -212,7 +192,7 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 		m_rdscan.vdCorr[i] = dCoef * dCorr;
 		
 
-		if(m_bIsDebug)	cout << "SCORE:" << "\t" << m_rdscan.vdCorr[i] << endl;
+//		if(m_bIsDebug)	cout << "SCORE:" << "\t" << m_rdscan.vdCorr[i] << endl;
 
 		////////////////// minus control corr ////////////////////////////
 		if(vnNorSPos.size()+vnVarSPos.size() != 0)	
@@ -248,7 +228,6 @@ void* CRD::AlleleDist(int nSIdx, int nEIdx)
 	bam_close(finBam);
 	if(m_sBamFileN != "")		bam_close(finBamN);
 	
-	if(m_bIsDebug) 	cout << "\t\t\t\t\tEND: " << nSIdx << "-" << nEIdx << endl;
 
 }
 
@@ -295,7 +274,7 @@ bool CRD::FilterRead(string sChr, vector<int> &vnNorSPos, vector<int> &vnNorEPos
 	}
 
 	string sRefSeq;
-	if(!m_FaFile.GetSeq(sRefSeq, sChr, nPivotSPos, nPivotEPos))		return -1;
+	if(!m_FaFile.GetSeq(sRefSeq, sChr, nPivotSPos, nPivotEPos))		return false;
 	
 	vector<int> vnNorMismatch;
 	vector<int> vnVarMismatch;
@@ -565,6 +544,7 @@ bool CRD::CheckRepeat(string sRef, string sAlt, string sChr, int nPos, int &nRep
 		int nSizeDiff = sRef.size()-sAlt.size();
 		string sOrigin = "";
 		bool bIsGetRefSeq = m_FaFile.GetSeq(sOrigin, sChr, nPos+1, nPos+nSizeDiff);
+		if(!bIsGetRefSeq)		return false;
 
 		nRepeatCnt = 1;
 		nRepeatLastLen = 0;
@@ -574,7 +554,7 @@ bool CRD::CheckRepeat(string sRef, string sAlt, string sChr, int nPos, int &nRep
 			bool bIsConsecutiveRepeat = true;
 			string sNextSeq = "";
 			bIsGetRefSeq = m_FaFile.GetSeq(sNextSeq, sChr, nPos+1+nSizeDiff*nRepeatCnt, nPos+nSizeDiff*(nRepeatCnt+1));
-			if(bIsGetRefSeq == false)	break;
+			if(!bIsGetRefSeq)		return false;
 			int nDiff = 0;
 			int nSame = 0;
 
@@ -606,7 +586,8 @@ bool CRD::CheckRepeat(string sRef, string sAlt, string sChr, int nPos, int &nRep
 			bool bIsConsecutiveRepeat = true;
 			string sNextSeq = "";
 			bool bIsGetRefSeq = m_FaFile.GetSeq(sNextSeq, sChr, nPos+1+nSizeDiff*nRepeatCnt, nPos+nSizeDiff*(nRepeatCnt+1));
-			if(bIsGetRefSeq == false)	break;
+			if(!bIsGetRefSeq)		return false;
+
 			int nDiff = 0;
 			int nSame = 0;
 

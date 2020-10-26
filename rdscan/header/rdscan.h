@@ -14,12 +14,14 @@
 #include "stdlib.h"
 #include <algorithm>
 #include <numeric>
+#include <ctime>
+#include <time.h>
 
 #include "./alglib.h"
 #include "./bam/bam.h"
 #include "./bio_files.h"
-#include "./util/util.h"
-#include "./util/suffix_array.h"
+#include "./util.h"
+#include "./suffix_array.h"
 
 
 #define EXTRA_LEN	500
@@ -31,6 +33,7 @@ class CRD;
 struct DIST_THREAD
 {
 	CRD *RD;
+	int nId;
 	int nSIdx;
 	int nEIdx;
 };
@@ -53,19 +56,6 @@ struct VCF
 	
 };
 
-
-struct VARscan
-{
-	//raw data
-	string sFormat;
-	vector<string> vsChr;
-	vector<int> vnPos;
-	vector<string> vsRef;
-	vector<string> vsAlt;
-	vector<string> vsStatus;		//Germline, Somatic, LOH
-	vector<string> vsAll;
-};
-
 struct RDscan
 {
 	vector<double> vdCorr;			//pearson corr
@@ -85,37 +75,45 @@ public:
 	string m_sBamFileN;
 	string m_sRefFile;
 	string m_sInputFile;
+	string m_sOutputFile;
 	int m_nCntThread;
 
 	CFA_FILE m_FaFile;			//reference file
 	
 	RDscan m_rdscan;			//rdscan (output)
 
+	//for util
+	clock_t m_clockStart;
+	clock_t m_clockEnd;
+	struct timespec m_tspecStart;
+	struct timespec m_tspecEnd;
 
 public:
-	CRD(int, string, string, string, string, int, bool);
+	CRD(int, string, string, string, string, string, int, bool);
 	bool ReadInput();
 	bool CalcDist();
 	bool Report();
+	
+	int PrintCommonInfo();
 
 private:
 	// input
 	VCF m_vcf;
 	//ADIscan m_adiscan;
-	VARscan m_varscan;
+	//VARscan m_varscan;
 
 
 	// read input files
 	bool ReadVcf();
-	bool ReadAdiscan();
-	bool ReadVarscan();
+//	bool ReadAdiscan();
+//	bool ReadVarscan();
 	
 	// calc dist
-	void* AlleleDist(int, int);
+	void* AlleleDist(int);
 	static void *AlleleDist_helper(void *object)
 	{
 		DIST_THREAD *my = (DIST_THREAD*)object;
-		my->RD->AlleleDist(my->nSIdx, my->nEIdx);
+		my->RD->AlleleDist(my->nId);
 	}
 	int ConvertChrToTid(string, bam_header_t*);
 	bool GetReadAlign(int &, int &, string &, int, string, string, bam1_t*);
@@ -126,13 +124,25 @@ private:
 
 	// report 
 	bool ReportVcf();
-	bool ReportAdiscan();
-	bool ReportVarscan();
+//	bool ReportAdiscan();
+//	bool ReportVarscan();
 
 
 	// library
 	bool Parsing(vector<string> &, string, string);
 	bool CalcPearsonCorr(int*, int*, double&, double&);
+
+	//util
+	void SetStartTime()
+	{		
+		//m_clockStart = clock();
+		clock_gettime(CLOCK_REALTIME, &m_tspecStart);
+	};
+	int ViewStatus(int nCurr, int nTotal, string sId, bool bIsNoDel=false);
+	string to_string(int);
+	string to_string(unsigned long);
+	string to_string(uint16_t);
+	string to_string(double);
 };
 
 

@@ -5,13 +5,14 @@ using namespace std;
 pthread_mutex_t mutex_temp = PTHREAD_MUTEX_INITIALIZER;
 
 
-CRD::CRD(int nStatus, string sBamFile, string sBamFileN, string sRefFile, string sInputFile, int nCntThread, bool bIsDebug)
+CRD::CRD(int nStatus, string sBamFile, string sBamFileN, string sRefFile, string sInputFile, string sOutputFile, int nCntThread, bool bIsDebug)
 {
 	m_nStatus = nStatus;
 	m_sBamFile = sBamFile;
 	m_sBamFileN = sBamFileN;
 	m_sRefFile = sRefFile;
 	m_sInputFile = sInputFile;
+	m_sOutputFile = sOutputFile;
 	m_nCntThread = nCntThread;
 	m_bIsDebug = bIsDebug;
 }
@@ -20,15 +21,24 @@ CRD::CRD(int nStatus, string sBamFile, string sBamFileN, string sRefFile, string
 
 bool CRD::ReadInput()
 {
+	//read vcf file
+	this->SetStartTime();
+	this->ViewStatus(0,1,"Read Input Vcf File");
 	if(m_nStatus == 1)		ReadVcf();
-	if(m_nStatus == 2)		ReadAdiscan();
-	if(m_nStatus == 3)		ReadVarscan();
+	this->ViewStatus(1,1,"Read Input Vcf File");
+	cout << endl;
 
+
+	
+	
 	//read reference file
 	m_FaFile.Init();
-	m_FaFile.ReadFaFile(m_sRefFile);
 
-	if(m_bIsDebug)		cout << "DONE: ReadInput()" << endl;
+	this->SetStartTime();
+	this->ViewStatus(0,1,"Read Reference Fasta");
+	m_FaFile.ReadFaFile(m_sRefFile);
+	this->ViewStatus(1,1,"Read Reference Fasta");
+	cout << endl;
 
 	return true;
 }
@@ -70,11 +80,20 @@ bool CRD::ReadVcf()
 			m_rdscan.vnVarT.push_back(0);
 			m_rdscan.vnVarN.push_back(0);
 		}
-//		if(m_rdscan.vdCorr.size() >= 10000)		break;
 	}
 	return true;
 }
 
+
+
+
+
+
+
+
+
+
+/*
 bool CRD::ReadAdiscan()
 {
 	return true;
@@ -134,25 +153,7 @@ bool CRD::ReadVarscan()
 
 	return true;
 }
-
-
-bool CRD::Parsing(vector<string> &vsWord, string sLine, string sSep)
-{
-	char *pcEnd;
-	unsigned long ulMarker;
-	vsWord.clear();
-	while(1)
-	{
-		ulMarker = sLine.find_first_of(sSep);
-		vsWord.push_back(sLine.substr(0, ulMarker));
-
-		if(ulMarker > sLine.size()) break;
-		sLine = sLine.substr(ulMarker+1);
-	}
-	return true;
-}
-
-
+*/
 
 
 
