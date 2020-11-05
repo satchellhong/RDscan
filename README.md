@@ -12,7 +12,7 @@ RDscan software is freely available for academic purposes and a license is requi
 ![tested](https://img.shields.io/badge/Tested-ubuntu-blue)
 
 ### Prerequisites
-1. gcc/g++
+1. gcc/g++ >= 4.8.5
 2. zlib<br>
 `RHEL/Centos` : zlib-devel<br>
 `Debian/Ubuntu` : zlib1g-dev
