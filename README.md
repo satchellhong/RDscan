@@ -40,29 +40,25 @@ The rd_scan binary executable file is in bin/
 __1. Single Sample__
 #### To run
 ```console
-$ ./rd_scan_v1.0.1 –b [Bam file] -r [reference file] -i [input]
+$ ./rd_scan_v1.0.1 –b [Bam file] -r [reference fa file] -i [input vcf] -o [output vcf]
 ```
 #### To run in the Docker image
 The file path should be an absolute path.
 ```console
-$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[Bam file] -r /mnt/[reference file] -i /mnt/[input]
+$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[Bam file] -r /mnt/[reference fa file] -i /mnt/[input vcf] -o /mnt/[output vcf]
 ```
 __2. Paired Samples__
 #### To run
 ```console
-$ ./rd_scan_v1.0.1 –b [Case bam file] -n [Control bam file] -r [reference file] -i [input]
+$ ./rd_scan_v1.0.1 –b [tumor bam file] -n [normal bam file] -r [reference fa file] -i [input vcf] -o [output vcf]
 ```
 #### To run in the Docker image
 The file path should be an absolute path.
 ```console
-$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[Case bam file] -n /mnt/[Control bam file] -r /mnt/[reference file] -i /mnt/[input]
+$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[tumor bam file] -n /mnt/[normal bam file] -r /mnt/[reference fa file] -i /mnt/[input] -o /mnt/[output vcf]
 ```
 
 __OPTIONs__
 
-1. Input format<br>
-`-f ['VCF' or 'ADIscan' or 'VARscan'], default='VCF'`
-          
-
-2. \# of Thread<br>
+#### \# of Thread<br>
 `-t [unsigned int], default=1`
