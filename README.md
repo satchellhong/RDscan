@@ -11,6 +11,12 @@ RDscan software is freely available for academic purposes and a license is requi
 ![tested](https://img.shields.io/badge/Tested-centos-blue)
 ![tested](https://img.shields.io/badge/Tested-ubuntu-blue)
 
+### Prerequisites
+1. gcc/g++
+2. zlib<br>
+`RHEL/Centos` : zlib-devel<br>
+`Debian/Ubuntu` : zlib1g-dev
+
 There are two ways to install RDscan.
 
 ### 1. Build
@@ -29,22 +35,34 @@ $ docker pull paramost/rdscan
 ```
 
 ## User Guide<br>
-The rd_scan file is in bin/
+The rd_scan binary executable file is in bin/
 
 __1. Single Sample__
+### To run
 ```console
-$ ./rd_scan –b [Bam file] -r [reference file] -i [input]
+$ ./rd_scan_v1.0.1 –b [Bam file] -r [reference file] -i [input]
+```
+### To run in the Docker image
+The file path should be an absolute path.
+```console
+$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[Bam file] -r /mnt/[reference file] -i /mnt/[input]
 ```
 __2. Paired Samples__
+### To run
 ```console
-$ ./rd_scan –b [Case bam file] -n [Control bam file] -r [reference file] -i [input]
+$ ./rd_scan_v1.0.1 –b [Case bam file] -n [Control bam file] -r [reference file] -i [input]
+```
+### To run in the Docker image
+The file path should be an absolute path.
+```console
+$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[Case bam file] -n /mnt/[Control bam file] -r /mnt/[reference file] -i /mnt/[input]
 ```
 
 __OPTIONs__
 
 1. Input format<br>
-<code>-f ['VCF' or 'ADIscan' or 'VARscan'], default='VCF'</code>
+`-f ['VCF' or 'ADIscan' or 'VARscan'], default='VCF'`
           
 
 2. \# of Thread<br>
-<code>-t [unsigned int], default=1</code>
+`-t [unsigned int], default=1`
