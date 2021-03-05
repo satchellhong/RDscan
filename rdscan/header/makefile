@@ -32,8 +32,8 @@ $(UTILFILES):
 		$(CXX) $(CFLAGS) -std=c++0x -c $(UTILDIR)$@cc -o $(UTILDIR)$@o
 
 MAKELIB:
-		$(AR) -csruU $(TARGET_BIO) $(shell find objs -type f \( -name *.o -not -name *-checkpoint.o \))
-		$(AR) -csruU $(TARGET_UTIL) $(shell find util -type f \( -name *.o -not -name *-checkpoint.o \))
+		ar -csruU $(TARGET_BIO) $(shell find objs -type f \( -name *.o -not -name *-checkpoint.o \))
+		ar -csruU $(TARGET_UTIL) $(shell find util -type f \( -name *.o -not -name *-checkpoint.o \))
 
 clean:
 	rm -rf $(OBJDIR)

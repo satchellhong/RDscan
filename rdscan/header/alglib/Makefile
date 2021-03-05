@@ -16,7 +16,7 @@ $(TARGETDIR):
 		mkdir -p $(TARGETDIR)
 
 $(TARGET) : $(OBJS)
-		$(AR) -csruU $(TARGETDIR)$@ $(OBJS)
+		ar -csruU $(TARGETDIR)$@ $(OBJS)
 
 clean:
 		rm -rf *.o
