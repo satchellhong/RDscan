@@ -30,8 +30,13 @@ $ ./build.sh
 You can get the image from [here](https://hub.docker.com/repository/docker/paramost/rdscan)
 
 rdscan
-```console
+```shell
 $ docker pull paramost/rdscan
+```
+or
+```shell
+$ cd <where rdscan Dockerfile is>
+$ docker build -t paramost/rdscan -f Dockerfile .
 ```
 
 ## User Guide<br>
