@@ -11,6 +11,8 @@ RDscan software is freely available for academic purposes and a license is requi
 ![tested](https://img.shields.io/badge/Tested-centos-blue)
 ![tested](https://img.shields.io/badge/Tested-ubuntu-blue)
 
+### Download
+Release version can be downloaded from here: https://github.com/satchellhong/RDscan/releases/download/paper-version/rd_scan_v1.1.0
 ### Prerequisites
 1. gcc/g++ >= 4.8.5
 2. zlib<br>
