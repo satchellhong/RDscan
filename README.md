@@ -19,15 +19,6 @@ Release version can be downloaded from here: https://github.com/satchellhong/RDs
 `RHEL/Centos` : zlib-devel<br>
 `Debian/Ubuntu` : zlib1g-dev
 
-There are two ways to install RDscan.
-
-### 1. Build
-```console
-$ git clone https://github.com/satchellhong/RDscan.git
-$ cd rdscan
-$ ./build.sh
-```
-
 ## User Guide<br>
 The rd_scan binary executable file is in bin/
 
