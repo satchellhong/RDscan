@@ -26,14 +26,6 @@ $ cd rdscan
 $ ./build.sh
 ```
 
-### 2. Docker Image
-You can get the image from [here](https://hub.docker.com/repository/docker/paramost/rdscan)
-
-rdscan
-```console
-$ docker pull paramost/rdscan
-```
-
 ## User Guide<br>
 The rd_scan binary executable file is in bin/
 
@@ -42,21 +34,13 @@ __1. Single Sample__
 ```console
 $ ./rd_scan_v1.1.0 –b [Bam file] -r [reference fa file] -i [input vcf] -o [output vcf]
 ```
-#### To run in the Docker image
-The file path should be an absolute path.
-```console
-$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[Bam file] -r /mnt/[reference fa file] -i /mnt/[input vcf] -o /mnt/[output vcf]
-```
+
 __2. Paired Samples__
 #### To run
 ```console
 $ ./rd_scan_v1.1.0 –b [tumor bam file] -n [normal bam file] -r [reference fa file] -i [input vcf] -o [output vcf]
 ```
-#### To run in the Docker image
-The file path should be an absolute path.
-```console
-$ docker run -it --rm -v /:/mnt paramost/rdscan –b /mnt/[tumor bam file] -n /mnt/[normal bam file] -r /mnt/[reference fa file] -i /mnt/[input] -o /mnt/[output vcf]
-```
+
 
 __OPTIONs__
 
